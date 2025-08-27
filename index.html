@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boss Damage Simulator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        body {
+            background: #f5f7fa;
+            color: #2c3e50;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        body.dark-mode {
+            background: #1a1a2e;
+            color: #e6e6e6;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        
+        body.dark-mode .container {
+            background: #16213e;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eaeaea;
+        }
+        
+        body.dark-mode header {
+            border-bottom: 1px solid #2d4059;
+        }
+        
+        h1 {
+            font-size: 32px;
+            color: #3498db;
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+        
+        body.dark-mode h1 {
+            color: #4cc9f0;
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 16px;
+        }
+        
+        body.dark-mode .subtitle {
+            color: #b0b0b0;
+        }
+        
+        .slider-container {
+            margin: 25px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+        
+        body.dark-mode .slider-container {
+            background: #1e2a47;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 15px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 18px;
+        }
+        
+        body.dark-mode label {
+            color: #e6e6e6;
+        }
+        
+        .slider-wrapper {
+            position: relative;
+            margin: 30px 0;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            -webkit-appearance: none;
+            height: 8px;
+            border-radius: 5px;
+            background: linear-gradient(to right, #3498db 0%, #3498db 33.33%, #e0e0e0 33.33%, #e0e0e0 100%);
+            outline: none;
+        }
+        
+        body.dark-mode input[type="range"] {
+            background: linear-gradient(to right, #4cc9f0 0%, #4cc9f0 33.33%, #2d4059 33.33%, #2d4059 100%);
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #3498db;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.7);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(52, 152, 219, 0.9);
+        }
+        
+        body.dark-mode input[type="range"]::-webkit-slider-thumb {
+            background: #4cc9f0;
+            box-shadow: 0 0 10px rgba(76, 201, 240, 0.7);
+        }
+        
+        .blaze-markers {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        
+        .blaze-marker {
+            width: 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+        
+        body.dark-mode .blaze-marker {
+            color: #b0b0b0;
+        }
+        
+        .blaze-count {
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+            color: #3498db;
+            margin: 20px 0;
+            padding: 12px;
+            background: #f0f7ff;
+            border-radius: 10px;
+        }
+        
+        body.dark-mode .blaze-count {
+            color: #4cc9f0;
+            background: #1e2a47;
+        }
+        
+        .results {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+        
+        body.dark-mode .results {
+            background: #1e2a47;
+        }
+        
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 15px 0;
+            padding: 10px 0;
+            border-bottom: 1px dotted #ddd;
+        }
+        
+        body.dark-mode .result-row {
+            border-bottom: 1px dotted #2d4059;
+        }
+        
+        .result-label {
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+        
+        body.dark-mode .result-label {
+            color: #b0b0b0;
+        }
+        
+        .result-value {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        body.dark-mode .result-value {
+            color: #e6e6e6;
+        }
+        
+        .net-damage {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 25px 0;
+            padding: 20px;
+            background: #f0f7ff;
+            border-radius: 12px;
+            color: #3498db;
+        }
+        
+        body.dark-mode .net-damage {
+            background: #1e2a47;
+            color: #4cc9f0;
+        }
+        
+        .dropdown {
+            margin: 20px 0;
+        }
+        
+        .dropdown summary {
+            padding: 15px;
+            background: #f0f7ff;
+            border-radius: 10px;
+            cursor: pointer;
+            color: #3498db;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        body.dark-mode .dropdown summary {
+            background: #1e2a47;
+            color: #4cc9f0;
+        }
+        
+        .dropdown-content {
+            margin-top: 5px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        body.dark-mode .dropdown-content {
+            background: #1e2a47;
+        }
+        
+        .calc-step {
+            margin: 15px 0;
+            padding: 12px;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        
+        body.dark-mode .calc-step {
+            background: #16213e;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        .attempts {
+            margin: 25px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        body.dark-mode .attempts {
+            background: #1e2a47;
+        }
+        
+        .attempts h3 {
+            margin-bottom: 15px;
+            color: #7f8c8d;
+        }
+        
+        body.dark-mode .attempts h3 {
+            color: #b0b0b0;
+        }
+        
+        .attempt-value {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #3498db;
+        }
+        
+        body.dark-mode .attempt-value {
+            color: #4cc9f0;
+        }
+        
+        .theme-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #3498db;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            border: none;
+            font-size: 24px;
+        }
+        
+        body.dark-mode .theme-toggle {
+            background: #4cc9f0;
+        }
+        
+        footer {
+            margin-top: 30px;
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        
+        body.dark-mode footer {
+            color: #b0b0b0;
+        }
+        
+        .highlight {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        
+        body.dark-mode .highlight {
+            color: #ff7f50;
+        }
+        
+        /* Animation for value changes */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse {
+            animation: pulse 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Ashfang Damage Simulator</h1>
+            <p class="subtitle">Calculate net damage based on blazes killed and boss healing</p>
+        </header>
+        
+        <div class="slider-container">
+            <label for="blazeSlider">Number of Blazes Killed:</label>
+            <div class="slider-wrapper">
+                <input type="range" id="blazeSlider" min="0" max="12" value="4" step="1">
+                <div class="blaze-markers">
+                    <div class="blaze-marker">0</div>
+                    <div class="blaze-marker">3</div>
+                    <div class="blaze-marker">6</div>
+                    <div class="blaze-marker">9</div>
+                    <div class="blaze-marker">12</div>
+                </div>
+            </div>
+            <div class="blaze-count"><span id="blazeValue">4</span> blazes killed</div>
+        </div>
+        
+        <div class="results">
+            <div class="result-row">
+                <span class="result-label">Boss HP:</span>
+                <span class="result-value">50,000,000</span>
+            </div>
+            <div class="result-row">
+                <span class="result-label">Damage per orb:</span>
+                <span class="result-value">2,000,000</span>
+            </div>
+            <div class="result-row">
+                <span class="result-label">Healing per remaining blaze:</span>
+                <span class="result-value">500,000</span>
+            </div>
+        </div>
+        
+        <div class="net-damage" id="netDamage">
+            Net Damage: 4,000,000
+        </div>
+        
+        <div class="dropdown">
+            <details>
+                <summary>Calculation Details <i class="fas fa-chevron-down"></i></summary>
+                <div class="dropdown-content">
+                    <div class="calc-step" id="damageCalc">Damage Dealt: 4 × 2,000,000 = 8,000,000</div>
+                    <div class="calc-step" id="healingCalc">Healing Received: 8 × 500,000 = 4,000,000</div>
+                    <div class="calc-step" id="netCalc">Net Damage: 8,000,000 - 4,000,000 = 4,000,000</div>
+                </div>
+            </details>
+        </div>
+        
+        <div class="attempts">
+            <h3>Attempts Needed to Kill Boss</h3>
+            <div class="attempt-value" id="attemptsNeeded">13</div>
+        </div>
+    </div>
+    
+    <button class="theme-toggle" id="themeToggle">
+        <i class="fas fa-moon"></i>
+    </button>
+    
+    <footer>
+        <p>Adjust the slider to see calculations for different scenarios</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const blazeSlider = document.getElementById('blazeSlider');
+            const blazeValue = document.getElementById('blazeValue');
+            const netDamage = document.getElementById('netDamage');
+            const damageCalc = document.getElementById('damageCalc');
+            const healingCalc = document.getElementById('healingCalc');
+            const netCalc = document.getElementById('netCalc');
+            const attemptsNeeded = document.getElementById('attemptsNeeded');
+            const themeToggle = document.getElementById('themeToggle');
+            
+            const BOSS_HP = 50000000;
+            const DAMAGE_PER_ORB = 2000000;
+            const HEALING_PER_BLAZE = 500000;
+            const TOTAL_BLAZES = 12;
+            
+            function formatNumber(num) {
+                return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            }
+            
+            function calculateDamage(blazesKilled) {
+                const damageDealt = blazesKilled * DAMAGE_PER_ORB;
+                const remainingBlazes = TOTAL_BLAZES - blazesKilled;
+                const healingReceived = remainingBlazes * HEALING_PER_BLAZE;
+                const netDamageValue = damageDealt - healingReceived;
+                
+                return {
+                    damageDealt,
+                    healingReceived,
+                    netDamageValue,
+                    remainingBlazes
+                };
+            }
+            
+            function updateSliderFill() {
+                const value = blazeSlider.value;
+                const max = blazeSlider.max;
+                const percentage = (value / max) * 100;
+                blazeSlider.style.background = `linear-gradient(to right, #3498db 0%, #3498db ${percentage}%, #e0e0e0 ${percentage}%, #e0e0e0 100%)`;
+                
+                if (document.body.classList.contains('dark-mode')) {
+                    blazeSlider.style.background = `linear-gradient(to right, #4cc9f0 0%, #4cc9f0 ${percentage}%, #2d4059 ${percentage}%, #2d4059 100%)`;
+                }
+            }
+            
+            function updateUI() {
+                const blazesKilled = parseInt(blazeSlider.value);
+                blazeValue.textContent = blazesKilled;
+                
+                const results = calculateDamage(blazesKilled);
+                
+                // Update main net damage display
+                netDamage.textContent = `Net Damage: ${formatNumber(results.netDamageValue)}`;
+                
+                // Update calculation details
+                damageCalc.textContent = `Damage Dealt: ${blazesKilled} × ${formatNumber(DAMAGE_PER_ORB)} = ${formatNumber(results.damageDealt)}`;
+                healingCalc.textContent = `Healing Received: ${results.remainingBlazes} × ${formatNumber(HEALING_PER_BLAZE)} = ${formatNumber(results.healingReceived)}`;
+                netCalc.textContent = `Net Damage: ${formatNumber(results.damageDealt)} - ${formatNumber(results.healingReceived)} = ${formatNumber(results.netDamageValue)}`;
+                
+                // Update attempts needed
+                if (results.netDamageValue <= 0) {
+                    attemptsNeeded.innerHTML = "∞ <span class='highlight'>(boss heals more than you damage)</span>";
+                } else {
+                    const attempts = Math.ceil(BOSS_HP / results.netDamageValue);
+                    attemptsNeeded.textContent = formatNumber(attempts);
+                }
+                
+                // Add animation to values that changed
+                netDamage.classList.add('pulse');
+                setTimeout(() => netDamage.classList.remove('pulse'), 500);
+                
+                // Update slider fill
+                updateSliderFill();
+            }
+            
+            function toggleTheme() {
+                document.body.classList.toggle('dark-mode');
+                if (document.body.classList.contains('dark-mode')) {
+                    themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+                } else {
+                    themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+                }
+                updateSliderFill();
+            }
+            
+            // Initial update
+            updateUI();
+            
+            // Event listeners
+            blazeSlider.addEventListener('input', updateUI);
+            themeToggle.addEventListener('click', toggleTheme);
+            
+            // Update dropdown icon when opened/closed
+            document.querySelectorAll('details').forEach(detail => {
+                detail.addEventListener('toggle', function() {
+                    const icon = this.querySelector('summary i');
+                    if (this.open) {
+                        icon.className = 'fas fa-chevron-up';
+                    } else {
+                        icon.className = 'fas fa-chevron-down';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
